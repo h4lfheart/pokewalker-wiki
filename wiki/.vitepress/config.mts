@@ -51,6 +51,7 @@ const vitePressOptions = {
 
         ['meta', {property: 'og:type', content: 'website'}],
         ['meta', {property: 'og:site_name', content: 'Pokéwalker Wiki'}],
+        ['meta', {property: 'og:description', content: 'Welcome to Pokéwalker.net, your one stop Pokéwalker resource!'}],
         ['meta', {property: 'og:image', content: socialImage}],
         ['meta', {property: 'og:image:alt', content: 'Pokéwalker Wiki'}],
         ['meta', {property: 'og:image:type', content: 'image/png'}],
@@ -65,7 +66,7 @@ const vitePressOptions = {
             ? pageData.title
             : 'Pokéwalker Wiki'
         const description =
-            pageData.description || 'Pokéwalker Wiki'
+            pageData.description || 'Welcome to Pokéwalker.net, your one stop Pokéwalker resource!'
         const url = `${siteUrl}${pageData.relativePath
             .replace(/(^|\/)index\.md$/, '$1')
             .replace(/\.md$/, '')}`
