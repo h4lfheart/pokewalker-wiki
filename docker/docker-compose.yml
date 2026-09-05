@@ -1,6 +1,6 @@
 services:
   docs:
-    container_name: fp-docs
+    container_name: pokewalker-docs
     image: ghcr.io/${GITHUB_OWNER}/pokewalker-wiki:latest
     restart: unless-stopped
     ports:
@@ -12,6 +12,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /root/.docker/config.json:/config.json:ro
-    command: fp-docs --interval 30 --cleanup
+    command: pokewalker-docs --interval 30 --cleanup
     environment:
       - WATCHTOWER_CLEANUP=true
