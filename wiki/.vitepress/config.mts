@@ -50,6 +50,7 @@ const vitePressOptions = {
         ['meta', {name: 'theme-color', content: brandColor}],
 
         ['meta', {property: 'og:type', content: 'website'}],
+        ['meta', {property: 'og:site_name', content: 'Pokéwalker Wiki'}],
         ['meta', {property: 'og:image', content: socialImage}],
         ['meta', {property: 'og:image:alt', content: 'Pokéwalker Wiki'}],
         ['meta', {property: 'og:image:type', content: 'image/png'}],
@@ -60,11 +61,9 @@ const vitePressOptions = {
     ],
 
     transformPageData(pageData) {
-        const title = pageData.title
-            ? pageData.title
-            : 'Pokéwalker Wiki'
-        const description =
-            pageData.description || 'Your one stop Pokéwalker resource!'
+        const isHome = pageData.relativePath === 'index.md'
+        const title = isHome ? 'Home' : (pageData.title || 'Pokéwalker Wiki')
+        const description = pageData.description || 'Your one stop Pokéwalker resource!'
         const url = `${siteUrl}${pageData.relativePath
             .replace(/(^|\/)index\.md$/, '$1')
             .replace(/\.md$/, '')}`
