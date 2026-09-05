@@ -1,0 +1,8 @@
+.idea
+
+wiki/.vitepress/cache
+node_modules
+dist/
+
+.env
+.env.local

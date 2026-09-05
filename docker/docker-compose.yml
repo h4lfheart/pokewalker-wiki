@@ -1,0 +1,17 @@
+services:
+  docs:
+    container_name: fp-docs
+    image: ghcr.io/${GITHUB_OWNER}/pokewalker-wiki:latest
+    restart: unless-stopped
+    ports:
+      - "${DOCS_PORT}:80"
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json:ro
+    command: fp-docs --interval 30 --cleanup
+    environment:
+      - WATCHTOWER_CLEANUP=true

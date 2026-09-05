@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "vitepress": "2.0.0-alpha.19",
+    "vitepress-sidebar": "^1.39.0"
+  },
+  "scripts": {
+    "wiki:dev": "vitepress dev wiki",
+    "wiki:build": "vitepress build wiki",
+    "wiki:preview": "vitepress preview wiki"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+wiki/.vitepress/cache
+wiki/.vitepress/dist
+
+.idea
+.github
+*.md
+
+!wiki/**/*.md
+
+.env
+.env.*
