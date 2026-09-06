@@ -37,7 +37,7 @@ const vitePressOptions = {
     cleanUrls: true,
     srcExclude: ['templates/**'],
 
-    appearance: false,
+    appearance: true,
     defaultTheme: 'light',
 
     vite: {
