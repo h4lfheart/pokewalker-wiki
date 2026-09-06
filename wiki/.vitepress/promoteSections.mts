@@ -31,7 +31,7 @@ function readFrontmatter(filePath: string, key: string): unknown {
     if (!existsSync(filePath)) return undefined
     try {
         const content = readFileSync(filePath, 'utf8')
-        const match = content.match(/^---\n([\s\S]*?)\n---/)
+        const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
         if (!match) return undefined
         const fm = match[1]
         if (key === 'section') {
@@ -60,9 +60,9 @@ function isSectionFolder(configPath: string): boolean {
     }
 
     const indexPath = join(configPath, '..', 'index.md')
-    if (readFrontmatter(indexPath, 'section') === true) return true
+    return readFrontmatter(indexPath, 'section') === true;
 
-    return false
+
 }
 
 function getFolderOrder(configPath: string): number | undefined {
@@ -82,6 +82,22 @@ function getFolderOrder(configPath: string): number | undefined {
     if (typeof order === 'number') return order
 
     return undefined
+}
+
+function getRootIndexTitle(docsRoot: string, scanStartPath: string): string {
+    const indexPath = join(docsRoot, scanStartPath, 'index.md')
+    if (!existsSync(indexPath)) return scanStartPath
+    try {
+        const content = readFileSync(indexPath, 'utf8')
+        const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+        if (!match) return scanStartPath
+        const fm = match[1]
+        const titleMatch = fm.match(/^\s*title:\s*(.+)\s*$/m)
+        if (titleMatch && titleMatch[1]) return titleMatch[1].trim()
+    } catch {
+        // ignore
+    }
+    return scanStartPath
 }
 
 function listSectionFolders(docsRoot: string, scanStartPath: string): string[] {
@@ -138,21 +154,22 @@ function promoteRootGroup(
     if (children.length === 0) return [stripEmptyItems(rootGroup)]
 
     const sectionFolders = listSectionFolders(docsRoot, scanStartPath)
-    if (sectionFolders.length === 0) return [rootGroup]
 
     const kept: SidebarItem[] = []
     const promoted: SidebarItem[] = []
     const claimed = new Set<SidebarItem>()
 
-    for (const folderName of sectionFolders) {
-        const match = children.find(
-            (child) =>
-                !claimed.has(child) && itemBelongsToFolder(child, folderName)
-        )
+    if (sectionFolders.length > 0) {
+        for (const folderName of sectionFolders) {
+            const match = children.find(
+                (child) =>
+                    !claimed.has(child) && itemBelongsToFolder(child, folderName)
+            )
 
-        if (match) {
-            claimed.add(match)
-            promoted.push(match)
+            if (match) {
+                claimed.add(match)
+                promoted.push(match)
+            }
         }
     }
 
@@ -160,16 +177,26 @@ function promoteRootGroup(
         if (!claimed.has(child)) kept.push(child)
     }
 
-    if (promoted.length === 0) return [stripEmptyItems(rootGroup)]
+    if (promoted.length === 0 && kept.length === 0) return [stripEmptyItems(rootGroup)]
 
-    const parent = stripEmptyItems({
-        ...rootGroup,
-        ...(kept.length > 0 ? {items: kept} : {})
-    })
+    const result: SidebarItem[] = []
 
-    if (!kept.length) delete parent.items
+    if (kept.length > 0) {
+        const rootTitle = getRootIndexTitle(docsRoot, scanStartPath)
+        result.push(
+            stripEmptyItems({
+                text: rootTitle,
+                collapsed: false,
+                items: kept
+            })
+        )
+    }
 
-    return [parent, ...promoted.map(stripEmptyItems)]
+    for (const item of promoted) {
+        result.push(stripEmptyItems(item))
+    }
+
+    return result
 }
 
 function stripEmptyItems(item: SidebarItem): SidebarItem {
@@ -196,7 +223,7 @@ export function promoteSections(
         const config = byResolvePath.get(resolvePath)
         const items = entry.items ?? []
 
-        if (!config?.scanStartPath || items.length !== 1 || !items[0]) {
+        if (!config?.scanStartPath || items.length === 0) {
             result[resolvePath] = {
                 ...entry,
                 items: items.map(stripEmptyItems)
@@ -205,9 +232,73 @@ export function promoteSections(
         }
 
         const docsRoot = config.documentRootPath ?? 'docs'
+        const scanStartPath = config.scanStartPath
+
+        if (items.length === 1 && items[0]?.items) {
+            result[resolvePath] = {
+                ...entry,
+                items: promoteRootGroup(items[0], docsRoot, scanStartPath)
+            }
+            continue
+        }
+
+        const sectionFolders = listSectionFolders(docsRoot, scanStartPath)
+
+        if (sectionFolders.length === 0) {
+            const rootTitle = getRootIndexTitle(docsRoot, scanStartPath)
+            result[resolvePath] = {
+                ...entry,
+                items: [
+                    stripEmptyItems({
+                        text: rootTitle,
+                        collapsed: false,
+                        items: items.map(stripEmptyItems)
+                    })
+                ]
+            }
+            continue
+        }
+
+        const kept: SidebarItem[] = []
+        const promoted: SidebarItem[] = []
+        const claimed = new Set<SidebarItem>()
+
+        for (const folderName of sectionFolders) {
+            const match = items.find(
+                (child) =>
+                    !claimed.has(child) && itemBelongsToFolder(child, folderName)
+            )
+
+            if (match) {
+                claimed.add(match)
+                promoted.push(match)
+            }
+        }
+
+        for (const child of items) {
+            if (!claimed.has(child)) kept.push(child)
+        }
+
+        const resultItems: SidebarItem[] = []
+
+        if (kept.length > 0) {
+            const rootTitle = getRootIndexTitle(docsRoot, scanStartPath)
+            resultItems.push(
+                stripEmptyItems({
+                    text: rootTitle,
+                    collapsed: false,
+                    items: kept.map(stripEmptyItems)
+                })
+            )
+        }
+
+        for (const item of promoted) {
+            resultItems.push(stripEmptyItems(item))
+        }
+
         result[resolvePath] = {
             ...entry,
-            items: promoteRootGroup(items[0], docsRoot, config.scanStartPath)
+            items: resultItems
         }
     }
 

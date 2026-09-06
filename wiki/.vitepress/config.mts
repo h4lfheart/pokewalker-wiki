@@ -27,6 +27,21 @@ const sidebarConfigs = [
         ...sharedSidebarOptions,
         scanStartPath: 'hardware',
         resolvePath: '/hardware/'
+    },
+    {
+        ...sharedSidebarOptions,
+        scanStartPath: 'firmware',
+        resolvePath: '/firmware/'
+    },
+    {
+        ...sharedSidebarOptions,
+        scanStartPath: 'development',
+        resolvePath: '/development/'
+    },
+    {
+        ...sharedSidebarOptions,
+        scanStartPath: 'contributing',
+        resolvePath: '/contributing/'
     }
 ]
 
@@ -86,6 +101,7 @@ const vitePressOptions = {
             {text: 'Hardware', link: '/hardware/overview/specifications'},
             {text: 'Firmware', link: '/firmware/'},
             {text: 'Development', link: '/development/'},
+            {text: 'Contributing', link: '/contributing/modifying-pages'},
             {text: 'Community', link: 'https://discord.gg/ymbTMsS', target: '_blank', rel: 'noopener'},
         ],
 

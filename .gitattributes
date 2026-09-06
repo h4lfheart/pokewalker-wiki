@@ -1,1 +1,4 @@
-*.md linguist-documentation
+wiki/** linguist-documentation=false
+
+*.md linguist-detectable=true
+wiki/**/*.md linguist-documentation=false
